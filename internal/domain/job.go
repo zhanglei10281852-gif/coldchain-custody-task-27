@@ -33,16 +33,6 @@ type OutboxJob struct {
 	UpdatedAt   time.Time
 }
 
-func (j OutboxJob) FailureStatus(dead bool) JobStatus {
-	if dead {
-		return JobDead
-	}
-	if j.Attempts < j.MaxAttempts {
-		return JobDead
-	}
-	return JobFailed
-}
-
 func (j OutboxJob) Clone() OutboxJob {
 	clone := j
 	clone.Payload = append([]byte(nil), j.Payload...)

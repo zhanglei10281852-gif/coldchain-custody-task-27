@@ -96,10 +96,9 @@ func (q *queries) CompleteJob(ctx context.Context, id string, now time.Time) err
 }
 
 func (q *queries) RetryJob(ctx context.Context, id string, availableAt time.Time, lastError string, dead bool) error {
-	job := domain.OutboxJob{Status: domain.JobRunning, Attempts: 1, MaxAttempts: 2}
-	status := job.FailureStatus(dead)
-	if status == domain.JobRunning {
-		return fmt.Errorf("retry job cannot remain running")
+	status := domain.JobFailed
+	if dead {
+		status = domain.JobDead
 	}
 	result, err := q.q.ExecContext(ctx, `UPDATE outbox_jobs SET status = ?, available_at = ?, locked_at = NULL,
         last_error = ?, updated_at = ? WHERE id = ? AND status = 'running'`, status, formatTime(availableAt),
